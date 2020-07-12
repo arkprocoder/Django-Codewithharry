@@ -6,11 +6,7 @@ from django.shortcuts import render
 #code for video 6
 def index(request):
     return render(request, 'index.html')
-    # return HttpResponse("Home")
-
-# def about(request):
-#     return HttpResponse("About Jay Patel")
-
+    
 def ex1(request):
     return HttpResponse(''' 
     <h2>Navbar</h2> 
@@ -24,13 +20,15 @@ def ex1(request):
 
 def analyze(request):
     #Get the text
-    djtext = request.GET.get('text', 'default')
+    djtext = request.POST.get('text', 'default')
     #check the check box value
-    removepunc = request.GET.get('removepunc', 'off')
-    fullcaps = request.GET.get('fullcaps', 'off')
-    newlineremover = request.GET.get('newlineremover', 'off')
-    extraspaceremover = request.GET.get('extraspaceremover', 'off')
-    charcount = request.GET.get('countchar', 'off') 
+    removepunc = request.POST.get('removepunc', 'off')
+    fullcaps = request.POST.get('fullcaps', 'off')
+    newlineremover = request.POST.get('newlineremover', 'off')
+    extraspaceremover = request.POST.get('extraspaceremover', 'off')
+    charcount = request.POST.get('countchar', 'off') 
+
+    purpose = ""
 
     #Analyze the text
     if removepunc=="on":
@@ -39,34 +37,41 @@ def analyze(request):
         for char in djtext:
             if char not in punctuations:
                 analyzed = analyzed + char
-
         params = {'purpose': 'Removed Punctuations', 'analyzed_text': analyzed}
-        return render(request, 'analyze.html', params)
-    elif fullcaps == "on":
+        djtext = analyzed
+        purpose += "Removed Punctuations"
+        print(purpose)
+
+    if fullcaps == "on":
         analyzed = ""
         for char in djtext:
             analyzed += char.upper()
         params = {'purpose': 'Full Capitalise', 'analyzed_text': analyzed}
-        return render(request, 'analyze.html', params)
+        djtext = analyzed
+        purpose += "| Full Capitalise |"
+        print(purpose)
 
-    elif newlineremover == "on":
+    if newlineremover == "on":
         analyzed = ""
         for char in djtext:
-            if char!="\n":
+            if char!="\n" and char!="\r":
                 analyzed += char
         params = {'purpose': 'New Line Remover', 'analyzed_text': analyzed}
-        return render(request, 'analyze.html', params)
+        djtext = analyzed
+        purpose += "| New Line Remover |"
     
-    elif extraspaceremover == "on":
+    if extraspaceremover == "on":
         analyzed = ""
         for index, char in enumerate(djtext):
             if not(djtext[index] == " " and djtext[index+1] == " "):
                 analyzed += char
 
         params = {'purpose': 'Extra Space remover', 'analyzed_text': analyzed}
-        return render(request, 'analyze.html', params)
+        djtext = analyzed
+        purpose += "Extra Space remover"
+        print(purpose)
 
-    elif charcount == "on":
+    if charcount == "on":
         count = 0
         for index, char in enumerate(djtext):
               if not(djtext[index] == " "):
@@ -74,11 +79,13 @@ def analyze(request):
 
         analyzed = "Characters in your Sentence are : {}".format(count)
         params = {'purpose' : 'Character Count', 'analyzed_text': analyzed}
-        return render(request, 'analyze.html', params)
+        djtext = analyzed
+    
+    if(removepunc!="on" and extraspaceremover!="on" and charcount!="on" and newlineremover!="on" and fullcaps!="on"):
+        return HttpResponse("please select any one functionality")
 
-    else:
-        return HttpResponse("Error")
-
+    params = {'purpose': purpose, 'analyzed_text': analyzed}
+    return render(request, 'analyze.html', params)
 
 # def capfirst(request):
 #     return HttpResponse("""capitalize first <br> <a href = "http://127.0.0.1:8000/" >Home</a>""")
